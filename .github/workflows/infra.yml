@@ -17,6 +17,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.2
+          terraform_wrapper: false
       - name: Tf_version
         run: terraform version
         working-directory: terraform
