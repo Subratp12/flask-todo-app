@@ -1,1 +1,3 @@
-resource "aws_provider"
+provider "aws" {
+  region = "var.region"
+}
