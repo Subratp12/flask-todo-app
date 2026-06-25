@@ -1,0 +1,11 @@
+.git
+__pycache__
+*.pyc
+*.pyo
+.env
+venv/
+.venv/
+tests/
+.flake8
+requirements-dev.txt
+README.md
