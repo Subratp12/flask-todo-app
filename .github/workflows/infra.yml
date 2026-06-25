@@ -1,0 +1,52 @@
+name: Infra
+on: 
+  workflow_dispatch:
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Install_tf
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.8.2
+      - name: Tf_version
+        run: terraform version
+        working-directory: terraform
+      - name: TF_init
+        run: terraform init
+        working-directory: terraform
+      - name: Tf_validate
+        run: terraform validate
+        working-directory: terraform
+      - name: Tf_fmt
+        run: terraform fmt -check
+        working-directory: terraform
+      - name: Tf_plan
+        run: terraform plan
+        working-directory: terraform
+
+      - name: Tf_apply
+        run: terraform apply -auto-approve
+        working-directory: terraform
+      
+      
+      - name: Get ECR URL
+        id: ecr
+        run: |
+          echo "ECR_URL=$(terraform output -raw ecr_repository_url)" >> $GITHUB_ENV
+        working-directory: terraform
+
+      - name: Save ECR URL to GitHub Secrets
+        run: |
+          gh secret set ECR_REPOSITORY_URL --body "$ECR_URL"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }} 
+        
