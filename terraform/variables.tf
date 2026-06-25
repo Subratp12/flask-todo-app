@@ -3,8 +3,9 @@ variable "repo_name" {
   type        = string
   default     = "to-do-image"
 }
+
 variable "region" {
-description = "Name of the region"
-type = string
-default = "ap-south-1"
+  description = "Name of the region"
+  type        = string
+  default     = "ap-south-1"
 }
