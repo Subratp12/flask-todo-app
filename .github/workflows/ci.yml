@@ -1,0 +1,47 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+jobs:
+  to-do:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip' # caching pip dependencies
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt --break-system-packages
+      
+      - name: Lint
+        run: flake8 .
+
+      - name: Run test
+        run: pytest tests/ -v --cov=. --cov-report=term-missing
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ secrets.ECR_REPOSITORY_URL }}:latest .
+          docker tag ${{ secrets.ECR_REPOSITORY_URL }}:latest ${{ secrets.ECR_REPOSITORY_URL }}:${{ github.sha }}
+
+      - name: Push to ECR
+        run: |
+          docker push ${{ secrets.ECR_REPOSITORY_URL }}:latest
+          docker push ${{ secrets.ECR_REPOSITORY_URL }}:${{ github.sha }}
+
+
+       
